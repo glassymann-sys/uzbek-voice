@@ -457,8 +457,9 @@
       <div>
         <div class="section-label">🤖 Model</div>
         <select id="modelName">
-          <option value="gemini-2.5-flash-preview-tts" selected>Gemini 2.5 Flash TTS</option>
-          <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro TTS</option>
+          <option value="gemini-2.5-flash-preview-tts" selected>Gemini 2.5 Flash TTS (preview)</option>
+          <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro TTS (preview)</option>
+          <option value="gemini-3.1-flash-tts-preview">Gemini 3.1 Flash TTS (preview)</option>
         </select>
       </div>
     </div>
@@ -603,6 +604,17 @@
       return new Blob([buffer], { type: 'audio/wav' });
     }
 
+    // ── TTS models list ───────────────────────────────────────
+    const TTS_MODELS = [
+      'gemini-2.5-flash-preview-tts',
+      'gemini-2.5-pro-preview-tts',
+      'gemini-3.1-flash-tts-preview'
+    ];
+
+    function isTTSModel(model) {
+      return TTS_MODELS.includes(model);
+    }
+
     // ── Main TTS call ─────────────────────────────────────────
     async function generateSpeech() {
       const apiKey   = document.getElementById('apiKey').value.trim();
@@ -630,22 +642,27 @@
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-      const body = {
-        contents: [{
-          role: 'user',
-          parts: [{ text }]
-        }],
-        generationConfig: {
-          responseModalities: ['AUDIO'],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: {
-                voiceName: voice
+      // TTS-specific models use responseModalities + speechConfig
+      // Fallback models use text prompt asking to respond in speech style
+      let body;
+      if (isTTSModel(model)) {
+        body = {
+          contents: [{ role: 'user', parts: [{ text }] }],
+          generationConfig: {
+            responseModalities: ['AUDIO'],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: voice }
               }
             }
           }
-        }
-      };
+        };
+      } else {
+        // Non-TTS models: show helpful message
+        setLoading(false);
+        showStatus('error', 'Bu model TTS uchun emas. Iltimos "Gemini 2.5 Flash TTS" yoki "Gemini 2.5 Pro TTS" modelini tanlang.');
+        return;
+      }
 
       try {
         const res = await fetch(url, {
@@ -658,7 +675,17 @@
 
         if (!res.ok) {
           const errMsg = data?.error?.message || `HTTP xatosi: ${res.status}`;
-          showStatus('error', `API xatosi: ${errMsg}`);
+          const status = res.status;
+
+          if (errMsg.includes('blocked') || errMsg.includes('PERMISSION_DENIED')) {
+            showStatus('error', '🔒 Bu API kalit TTS modeliga ruxsat bermaydi. AI Studio da yangi kalit oling: aistudio.google.com/app/apikey — "Create API key in new project" tugmasini bosing.');
+          } else if (errMsg.includes('depleted') || errMsg.includes('prepayment')) {
+            showStatus('error', '💳 Bepul limit tugagan. Yangi Google account bilan yangi API kalit oling.');
+          } else if (status === 429) {
+            showStatus('error', '⏳ So\'rovlar limiti oshdi. Biroz kuting va qayta urining.');
+          } else {
+            showStatus('error', `API xatosi: ${errMsg}`);
+          }
           return;
         }
 
