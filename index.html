@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O'zbek TTS — Gemini AI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --primary-light: #e8f0fe;
+      --accent: #34a853;
+      --danger: #ea4335;
+      --bg: #f8f9ff;
+      --surface: #ffffff;
+      --text: #1e1e2e;
+      --text-secondary: #5f6368;
+      --border: #e0e0e0;
+      --shadow: 0 2px 16px rgba(26,115,232,0.10);
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 60px;
+      color: var(--text);
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, #1a73e8, #34a853);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 4px 14px rgba(26,115,232,0.3);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1a73e8, #34a853);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-top: 6px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      width: 100%;
+      max-width: 680px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── API Key section ── */
+    .api-section {
+      margin-bottom: 24px;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .api-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-wrap {
+      position: relative;
+      flex: 1;
+    }
+
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--bg);
+      transition: border-color 0.2s;
+      outline: none;
+      font-family: inherit;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      background: white;
+    }
+
+    .toggle-key {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle-key:hover { color: var(--primary); }
+
+    /* ── Voice & Model selects ── */
+    .controls-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--bg);
+      cursor: pointer;
+      outline: none;
+      font-family: inherit;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235f6368' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    select:focus {
+      border-color: var(--primary);
+      background-color: white;
+    }
+
+    /* ── Textarea ── */
+    .textarea-wrap {
+      position: relative;
+      margin-bottom: 22px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: var(--text);
+      background: var(--bg);
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      background: white;
+    }
+
+    .char-count {
+      position: absolute;
+      bottom: 10px;
+      right: 14px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .char-count.warn { color: var(--danger); }
+
+    /* ── Quick phrases ── */
+    .quick-phrases {
+      margin-bottom: 22px;
+    }
+
+    .quick-title {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .phrases-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .phrase-btn {
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      background: var(--bg);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .phrase-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    /* ── Generate button ── */
+    .generate-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #1a73e8, #1557b0);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: inherit;
+      box-shadow: 0 4px 14px rgba(26,115,232,0.35);
+    }
+
+    .generate-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(26,115,232,0.45);
+    }
+
+    .generate-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-icon { font-size: 1.2rem; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Audio player ── */
+    .audio-section {
+      margin-top: 24px;
+      display: none;
+    }
+
+    .audio-section.visible { display: block; }
+
+    .audio-card {
+      background: linear-gradient(135deg, #e8f0fe, #f0fdf4);
+      border: 1.5px solid #c5d9f9;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .audio-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .audio-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    audio {
+      width: 100%;
+      border-radius: 8px;
+      height: 42px;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: white;
+      border: 1.5px solid var(--primary);
+      border-radius: 8px;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .download-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* ── Status / Error ── */
+    .status-bar {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-bar.error {
+      display: flex;
+      background: #fce8e6;
+      border: 1px solid #f5c6c3;
+      color: #c5221f;
+    }
+
+    .status-bar.info {
+      display: flex;
+      background: var(--primary-light);
+      border: 1px solid #c5d9f9;
+      color: var(--primary-dark);
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 500px) {
+      .controls-row { grid-template-columns: 1fr; }
+      h1 { font-size: 1.5rem; }
+      .card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🎙️</div>
+      <h1>O'zbek TTS</h1>
+    </div>
+    <p class="subtitle">Gemini AI orqali o'zbek matningizni ovozga aylantiring</p>
+  </header>
+
+  <div class="card">
+
+    <!-- API Key -->
+    <div class="api-section">
+      <div class="section-label">🔑 Gemini API Kalit</div>
+      <div class="api-row">
+        <div class="input-wrap">
+          <input type="password" id="apiKey" placeholder="AIzaSy..." autocomplete="off" />
+          <button class="toggle-key" onclick="toggleKeyVisibility()" title="Ko'rsatish/yashirish">👁️</button>
+        </div>
+      </div>
+      <div style="margin-top:6px; font-size:0.78rem; color:var(--text-secondary);">
+        API kalitni <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--primary);">Google AI Studio</a> dan oling — bepul
+      </div>
+    </div>
+
+    <!-- Voice & Model -->
+    <div class="controls-row">
+      <div>
+        <div class="section-label">🎭 Ovoz</div>
+        <select id="voiceName">
+          <option value="Kore">Kore (Ayol)</option>
+          <option value="Aoede">Aoede (Ayol)</option>
+          <option value="Leda">Leda (Ayol)</option>
+          <option value="Zephyr">Zephyr (Ayol)</option>
+          <option value="Charon">Charon (Erkak)</option>
+          <option value="Fenrir">Fenrir (Erkak)</option>
+          <option value="Orus">Orus (Erkak)</option>
+          <option value="Puck" selected>Puck (Erkak)</option>
+        </select>
+      </div>
+      <div>
+        <div class="section-label">🤖 Model</div>
+        <select id="modelName">
+          <option value="gemini-2.5-flash-preview-tts" selected>Gemini 2.5 Flash TTS</option>
+          <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro TTS</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Quick phrases -->
+    <div class="quick-phrases">
+      <div class="quick-title">Tez iboralar:</div>
+      <div class="phrases-list">
+        <button class="phrase-btn" onclick="setPhrase(this)">Assalomu alaykum!</button>
+        <button class="phrase-btn" onclick="setPhrase(this)">Qanday yordam bera olaman?</button>
+        <button class="phrase-btn" onclick="setPhrase(this)">Bugun ob-havo yaxshi.</button>
+        <button class="phrase-btn" onclick="setPhrase(this)">O'zbekiston — go'zal yurt.</button>
+        <button class="phrase-btn" onclick="setPhrase(this)">Rahmat, sog' bo'ling!</button>
+      </div>
+    </div>
+
+    <!-- Text input -->
+    <div class="section-label">📝 Matn kiriting</div>
+    <div class="textarea-wrap">
+      <textarea
+        id="textInput"
+        placeholder="O'zbek tilidagi matnni shu yerga yozing yoki yuqoridagi iboralardan birini tanlang..."
+        oninput="updateCharCount()"
+      ></textarea>
+      <span class="char-count" id="charCount">0 / 5000</span>
+    </div>
+
+    <!-- Generate button -->
+    <button class="generate-btn" id="generateBtn" onclick="generateSpeech()">
+      <span class="btn-icon" id="btnIcon">🔊</span>
+      <span id="btnText">Ovoz yaratish</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+
+    <!-- Status bar -->
+    <div class="status-bar" id="statusBar">
+      <span id="statusIcon"></span>
+      <span id="statusMsg"></span>
+    </div>
+
+    <!-- Audio output -->
+    <div class="audio-section" id="audioSection">
+      <div class="audio-card">
+        <div class="audio-header">
+          <div class="audio-title">✅ Audio tayyor</div>
+          <a class="download-btn" id="downloadBtn" download="uzbek_speech.wav">⬇️ Yuklab olish</a>
+        </div>
+        <audio id="audioPlayer" controls></audio>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    Powered by <a href="https://ai.google.dev" target="_blank">Google Gemini API</a> &nbsp;·&nbsp;
+    Faqat brauzerda ishlaydi, ma'lumotlar saqlanmaydi
+  </footer>
+
+  <script>
+    // ── Utility ──────────────────────────────────────────────
+    function toggleKeyVisibility() {
+      const inp = document.getElementById('apiKey');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+
+    function setPhrase(btn) {
+      document.getElementById('textInput').value = btn.textContent;
+      updateCharCount();
+    }
+
+    function updateCharCount() {
+      const len = document.getElementById('textInput').value.length;
+      const el = document.getElementById('charCount');
+      el.textContent = `${len} / 5000`;
+      el.classList.toggle('warn', len > 4500);
+    }
+
+    function setLoading(loading) {
+      const btn = document.getElementById('generateBtn');
+      const spinner = document.getElementById('spinner');
+      const icon = document.getElementById('btnIcon');
+      const text = document.getElementById('btnText');
+
+      btn.disabled = loading;
+      spinner.style.display = loading ? 'block' : 'none';
+      icon.style.display = loading ? 'none' : 'inline';
+      text.textContent = loading ? 'Ovoz yaratilmoqda...' : 'Ovoz yaratish';
+    }
+
+    function showStatus(type, msg) {
+      const bar = document.getElementById('statusBar');
+      const icon = document.getElementById('statusIcon');
+      const msgEl = document.getElementById('statusMsg');
+
+      bar.className = `status-bar ${type}`;
+      icon.textContent = type === 'error' ? '❌' : 'ℹ️';
+      msgEl.textContent = msg;
+    }
+
+    function hideStatus() {
+      document.getElementById('statusBar').className = 'status-bar';
+    }
+
+    // ── PCM → WAV conversion ──────────────────────────────────
+    // Gemini TTS returns raw 16-bit PCM at 24000 Hz, mono
+    function pcmToWav(pcmBase64) {
+      const binary = atob(pcmBase64);
+      const pcmBytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        pcmBytes[i] = binary.charCodeAt(i);
+      }
+
+      const sampleRate = 24000;
+      const numChannels = 1;
+      const bitsPerSample = 16;
+      const dataSize = pcmBytes.length;
+      const buffer = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(buffer);
+
+      const write = (off, str) => {
+        for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
+      };
+
+      write(0, 'RIFF');
+      view.setUint32(4,  36 + dataSize, true);
+      write(8, 'WAVE');
+      write(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1,  true);   // PCM
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * numChannels * bitsPerSample / 8, true);
+      view.setUint16(32, numChannels * bitsPerSample / 8, true);
+      view.setUint16(34, bitsPerSample, true);
+      write(36, 'data');
+      view.setUint32(40, dataSize, true);
+
+      for (let i = 0; i < dataSize; i++) {
+        view.setUint8(44 + i, pcmBytes[i]);
+      }
+
+      return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    // ── Main TTS call ─────────────────────────────────────────
+    async function generateSpeech() {
+      const apiKey   = document.getElementById('apiKey').value.trim();
+      const text     = document.getElementById('textInput').value.trim();
+      const voice    = document.getElementById('voiceName').value;
+      const model    = document.getElementById('modelName').value;
+
+      // Validation
+      if (!apiKey) {
+        showStatus('error', 'Iltimos, Gemini API kalitni kiriting.');
+        return;
+      }
+      if (!text) {
+        showStatus('error', 'Iltimos, ovozga aylantiriladigan matnni kiriting.');
+        return;
+      }
+      if (text.length > 5000) {
+        showStatus('error', 'Matn 5000 belgidan oshmasligi kerak.');
+        return;
+      }
+
+      hideStatus();
+      setLoading(true);
+      document.getElementById('audioSection').classList.remove('visible');
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+      const body = {
+        contents: [{
+          role: 'user',
+          parts: [{ text }]
+        }],
+        generationConfig: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: voice
+              }
+            }
+          }
+        }
+      };
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          const errMsg = data?.error?.message || `HTTP xatosi: ${res.status}`;
+          showStatus('error', `API xatosi: ${errMsg}`);
+          return;
+        }
+
+        // Extract audio data
+        const parts = data?.candidates?.[0]?.content?.parts;
+        const audioPart = parts?.find(p => p.inlineData?.mimeType?.startsWith('audio/'));
+
+        if (!audioPart) {
+          console.error('Javob:', JSON.stringify(data, null, 2));
+          showStatus('error', 'Javobda audio topilmadi. Konsolni tekshiring.');
+          return;
+        }
+
+        const mimeType = audioPart.inlineData.mimeType;
+        const b64data  = audioPart.inlineData.data;
+
+        let audioBlob;
+        // If already mp3/ogg — use directly; if pcm — wrap in WAV
+        if (mimeType.includes('pcm') || mimeType.includes('l16')) {
+          audioBlob = pcmToWav(b64data);
+        } else {
+          const binary = atob(b64data);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          audioBlob = new Blob([bytes], { type: mimeType });
+        }
+
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        const player = document.getElementById('audioPlayer');
+        const dlBtn  = document.getElementById('downloadBtn');
+
+        // Revoke previous
+        if (player.src && player.src.startsWith('blob:')) {
+          URL.revokeObjectURL(player.src);
+        }
+
+        player.src = audioUrl;
+        dlBtn.href = audioUrl;
+        dlBtn.download = `uzbek_tts_${Date.now()}.wav`;
+
+        document.getElementById('audioSection').classList.add('visible');
+        player.play().catch(() => {});
+
+      } catch (err) {
+        if (err.name === 'TypeError' && err.message.includes('fetch')) {
+          showStatus('error', 'Tarmoq xatosi. Internet aloqasini tekshiring.');
+        } else {
+          showStatus('error', `Xato: ${err.message}`);
+        }
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // ── Enter shortcut ─────────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        generateSpeech();
+      }
+    });
+  </script>
+</body>
+</html>
